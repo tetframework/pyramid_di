@@ -5,6 +5,7 @@ import venusian
 from pyramid.config import Configurator
 from zope.interface import Interface
 from zope.interface.interface import InterfaceClass
+from functools import update_wrapper
 
 
 _to_underscores = re.compile('((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))')

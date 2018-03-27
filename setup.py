@@ -7,12 +7,12 @@ README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
-    'pyramid>=1.7',
-    'pyramid_services',
+    'pyramid>=1.7,<2.0',
+    'pyramid_services>=1.1,<2.0',
 ]
 
 setup(name='pyramid_di',
-      version='0.1dev',
+      version='0.1.dev1',
       description='Dependency injection stuff for Pyramid',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
@@ -23,7 +23,6 @@ setup(name='pyramid_di',
           "Programming Language :: Python :: 3.5",
           "Programming Language :: Python :: 3.6",
           "Programming Language :: Python :: 3.7",
-          "Programming Language :: Python :: 3.8",
           "Programming Language :: Python :: 3 :: Only",
           "Topic :: Internet :: WWW/HTTP :: WSGI",
           "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
@@ -31,7 +30,7 @@ setup(name='pyramid_di',
           "Topic :: Software Development :: Libraries :: Application Frameworks"
       ],
       author='Antti Haapala',
-      author_email='antti.haapala@anttipatterns.com',
+      author_email='antti@haapala.name',
       url='http://www.anttipatterns.com',
       keywords='web wsgi bfg pylons pyramid',
       packages=find_packages(),
