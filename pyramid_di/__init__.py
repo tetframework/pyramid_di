@@ -18,24 +18,21 @@ class reify_attr(object):
     by finding it on the class in Python <=3.5, and using the ``__set_name__``
     on Python 3.6.
     """
+
+    names = None
     def __init__(self, wrapped):
         self.wrapped = wrapped
         update_wrapper(self, wrapped)
-        self.names = None
 
     def __get__(self, inst, objtype=None):
         if inst is None:
             return self
 
-        val = self.wrapped(inst)
         if self.names is None:
-            names = []
-            for name, value in list(objtype.__dict__.items()):
-                if value is self:
-                    names.append(name)
+            raise TypeError('reify_attr decorating {self.wrapped} not bound'
+                            'to a named attribute!')
 
-            self.names = names
-
+        val = self.wrapped(inst)
         for name in self.names:
             setattr(inst, name, val)
 
@@ -44,6 +41,7 @@ class reify_attr(object):
     def __set_name__(self, owner, name):
         if self.names is None:
             self.names = [name]
+
         else:
             self.names.append(name)
 
