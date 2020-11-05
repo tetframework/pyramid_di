@@ -8,7 +8,7 @@ from zope.interface.interface import InterfaceClass
 from functools import update_wrapper
 
 
-_to_underscores = re.compile('((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))')
+_to_underscores = re.compile("((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))")
 
 
 class reify_attr(object):
@@ -20,6 +20,7 @@ class reify_attr(object):
     """
 
     names = None
+
     def __init__(self, wrapped):
         self.wrapped = wrapped
         update_wrapper(self, wrapped)
@@ -29,8 +30,9 @@ class reify_attr(object):
             return self
 
         if self.names is None:
-            raise TypeError('reify_attr decorating {self.wrapped} not bound'
-                            'to a named attribute!')
+            raise TypeError(
+                "reify_attr decorating {self.wrapped} not bound" "to a named attribute!"
+            )
 
         val = self.wrapped(inst)
         for name in self.names:
@@ -47,10 +49,10 @@ class reify_attr(object):
 
 
 def _underscore(name):
-    return _to_underscores.sub(r'_\1', name).lower()
+    return _to_underscores.sub(r"_\1", name).lower()
 
 
-_is_iface_name = re.compile('^I[A-Z].*')
+_is_iface_name = re.compile("^I[A-Z].*")
 
 
 class ServiceRegistry(object):
@@ -67,38 +69,35 @@ class ServiceRegistry(object):
 
 
 def get_service_registry(registry):
-    if not hasattr(registry, 'services'):
+    if not hasattr(registry, "services"):
         registry.services = ServiceRegistry()
 
     return registry.services
 
 
-def register_di_service(config: Configurator,
-                         service_factory,
-                         *,
-                         scope='global',
-                         interface=Interface,
-                         name='',
-                         context_iface=Interface):
+def register_di_service(
+    config: Configurator,
+    service_factory,
+    *,
+    scope,
+    interface=Interface,
+    name="",
+    context_iface=Interface
+):
     registry = config.registry
-    if scope == 'global':
+    if scope == "global":
         # register only once
         if registry.queryUtility(interface, name=name) is None:
             ob_instance = service_factory(registry=registry)
-            get_service_registry(registry)._register_service(ob_instance,
-                                                             interface)
+            get_service_registry(registry)._register_service(ob_instance, interface)
 
             # only classes can be registered.
             if isinstance(interface, InterfaceClass):
-                registry.registerUtility(ob_instance,
-                                         interface,
-                                         name=name)
+                registry.registerUtility(ob_instance, interface, name=name)
 
             config.register_service(
-                service=ob_instance,
-                iface=interface,
-                context=context_iface,
-                name=name)
+                service=ob_instance, iface=interface, context=context_iface, name=name
+            )
 
     else:
         # noinspection PyUnusedLocal
@@ -106,48 +105,51 @@ def register_di_service(config: Configurator,
             return service_factory(request=request)
 
         config.register_service_factory(
-            wrapped_factory,
-            interface,
-            context_iface,
-            name=name)
+            wrapped_factory, interface, context_iface, name=name
+        )
 
 
-def service(interface=Interface,
-            name='',
-            context_iface=Interface,
-            scope='global'):
-    if scope not in {'global', 'request'}:
+def service(interface=None, *, name="", context_iface=Interface, scope):
+
+    if scope not in {"global", "request"}:
         raise ValueError(
-            "Invalid scope {}, must be either 'global' or 'request'"
-                .format(scope))
+            "Invalid scope {}, must be either 'global' or 'request'".format(scope)
+        )
 
     service_name = name
 
     def service_decorator(wrapped):
         def callback(scanner, name, ob):
             config = scanner.config
+            if interface is None:
+                if name:
+                    interface = Interface
+
+                else:
+                    interface = ob
+
             config.register_di_service(
                 ob,
                 name=service_name,
                 interface=interface,
                 context_iface=context_iface,
-                scope=scope
+                scope=scope,
             )
 
-        venusian.attach(wrapped, callback, category='pyramid_di.service')
+        venusian.attach(wrapped, callback, category="pyramid_di.service")
         return wrapped
 
     return service_decorator
 
 
-T = TypeVar('T', bound=object)
+T = TypeVar("T", bound=object)
 
 
-def autowired(interface: Type[T] = Interface, name: str = '') -> T:
+def autowired(interface: Type[T] = Interface, name: str = "") -> T:
     @reify_attr
     def getter(self):
-        if hasattr(self, 'request'):
-            context = getattr(self.request, 'context', None)
+        if hasattr(self, "request"):
+            context = getattr(self.request, "context", None)
             return self.request.find_service(interface, context, name)
 
         return self.registry.getUtility(interface, name)
@@ -158,7 +160,7 @@ def autowired(interface: Type[T] = Interface, name: str = '') -> T:
 class BaseService(object):
     def __init__(self, **kw):
         try:
-            self.registry = kw.pop('registry')
+            self.registry = kw.pop("registry")
             super(BaseService, self).__init__(**kw)
 
         except KeyError:
@@ -172,8 +174,8 @@ class RequestScopedBaseService(BaseService):
 
     def __init__(self, **kw):
         try:
-            self.request = kw.pop('request')
-            kw['registry'] = self.request.registry
+            self.request = kw.pop("request")
+            kw["registry"] = self.request.registry
             super(RequestScopedBaseService, self).__init__(**kw)
 
         except KeyError:
@@ -181,12 +183,12 @@ class RequestScopedBaseService(BaseService):
 
 
 def scan_services(config, *a, **kw):
-    kw['categories'] = ('pyramid_di.service',)
+    kw["categories"] = ("pyramid_di.service",)
     return config.scan(*a, **kw)
 
 
 def includeme(config):
-    config.include('pyramid_services')
-    config.add_directive('scan_services', scan_services)
-    config.add_directive('register_di_service', register_di_service)
+    config.include("pyramid_services")
+    config.add_directive("scan_services", scan_services)
+    config.add_directive("register_di_service", register_di_service)
     config.registry.services = ServiceRegistry()
