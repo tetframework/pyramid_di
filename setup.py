@@ -7,6 +7,7 @@ README = open(os.path.join(here, "README.txt")).read()
 CHANGES = open(os.path.join(here, "CHANGES.txt")).read()
 
 requires = ["pyramid>=1.7,<2.0", "pyramid_services>=1.1,<2.0"]
+dev_requires = ["pytest"]
 
 setup(
     name="pyramid_di",
@@ -36,4 +37,5 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=requires,
+    extras_require={"dev": dev_requires},
 )
