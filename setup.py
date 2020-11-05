@@ -3,8 +3,8 @@ import os, sys
 from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
-README = open(os.path.join(here, "README.txt")).read()
-CHANGES = open(os.path.join(here, "CHANGES.txt")).read()
+README = open(os.path.join(here, "README.md")).read()
+CHANGES = open(os.path.join(here, "CHANGES.md")).read()
 
 requires = ["pyramid>=1.7,<2.0", "pyramid_services>=1.1,<2.0"]
 dev_requires = ["pytest"]
@@ -14,6 +14,7 @@ setup(
     version="0.2",
     description="Dependency injection stuff for Pyramid",
     long_description=README + "\n\n" + CHANGES,
+    long_description_content_type="text/markdown",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Framework :: Pyramid",
