@@ -119,19 +119,20 @@ def service(interface=None, *, name="", context_iface=Interface, scope):
     service_name = name
 
     def service_decorator(wrapped):
+        # noinspection PyUnusedLocal,PyShadowingNames
         def callback(scanner, name, ob):
             config = scanner.config
-            if interface is None:
-                if name:
-                    interface = Interface
-
+            iface = interface
+            if iface is None:
+                if service_name:
+                    iface = Interface
                 else:
-                    interface = ob
+                    iface = ob
 
             config.register_di_service(
                 ob,
                 name=service_name,
-                interface=interface,
+                interface=iface,
                 context_iface=context_iface,
                 scope=scope,
             )
