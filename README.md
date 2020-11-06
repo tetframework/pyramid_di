@@ -7,15 +7,28 @@ Usage
 -----
 
 Define services:
+
 ```python
-# my_service_package.py
+# app/services/__init__.py
+
+from .my import MyService
+from .another import AnotherService
+```
+
+```python
+# app/services/my.py
 from pyramid_di import service, RequestScopedBaseService, autowired
 
 @service(scope='request')
 class MyService(RequestScopedBaseService):
     def my_method(self):
         return 'foobar'
+```
 
+```python
+# app/services/another.py
+from pyramid_di import service, RequestScopedBaseService, autowired
+from .my import MyService
 
 @service(scope='request')
 class AnotherService(RequestScopedBaseService):
@@ -26,22 +39,23 @@ class AnotherService(RequestScopedBaseService):
 ```
 
 Setup when creating the Pyramid app:
+
 ```python
 # Pyramid setup code:
-import my_service_package
 from pyramid.config import Configurator
 
 with Configurator() as config:
     config.include('pyramid_di')
-    config.scan_services(my_service_package)
+    config.scan_services('app.services')
 ```
 
 
 Use in views:
+
 ```python
 from pyramid_di import autowired
 from pyramid.view import view_config
-from my_service_package import AnotherService
+from my.services import AnotherService
 
 class MyViews:
     service = autowired(AnotherService)
