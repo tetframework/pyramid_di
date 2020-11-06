@@ -64,9 +64,9 @@ class MyViews:
         # self.request is required for autowired to work
         self.request = request
 
-    @view_config(route_name='some_view')
+    @view_config(route_name='some_view', renderer='json')
     def some_view(self):
-        self.service.another_method()  # 'foobar'
+        return self.service.another_method()  # 'foobar'
 
 # alternatively, without class-based views:
 
@@ -74,6 +74,21 @@ class MyViews:
 def some_view(request):
     service = request.find_service(AnotherService)
     service.another_method()  # 'foobar'
+```
+
+Mocking services for testing
+----------------------------
+
+```python3
+class MockService:
+    def another_method(self):
+        return 'mocked'
+
+def test_views():
+    request = DummyRequest()
+    my_views = MyViews(request)
+    my_views.service = MockService()
+    assert my_views.some_view() == 'mocked'
 ```
 
 Development
