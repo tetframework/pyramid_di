@@ -7,6 +7,8 @@ from zope.interface import Interface
 from zope.interface.interface import InterfaceClass
 from functools import update_wrapper
 from pyramid_services import _resolve_iface
+import warnings
+
 
 _to_underscores = re.compile("((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))")
 
@@ -87,11 +89,11 @@ def register_di_service(
     registry = config.registry
     if scope == "global":
         # register only once
-        if registry.queryUtility(interface, name=name) is None:
+        real_interface = _resolve_iface(interface)
+        if registry.queryUtility(real_interface, name=name) is None:
             ob_instance = service_factory(registry=registry)
             get_service_registry(registry)._register_service(ob_instance, interface)
 
-            real_interface = _resolve_iface(interface)
             registry.registerUtility(ob_instance, real_interface, name=name)
 
             config.register_service(
@@ -99,7 +101,9 @@ def register_di_service(
             )
 
         else:
-            warn
+            warnings.warn(f"Double registration of the same service {interface}"
+                           f" with name {name!r} attempted")
+
     else:
         # noinspection PyUnusedLocal
         def wrapped_factory(context, request):
@@ -155,19 +159,15 @@ def autowired(interface: Type[T] = Interface, name: str = "") -> T:
             context = getattr(self.request, "context", None)
             return self.request.find_service(interface, context, name)
 
-        return self.registry.getUtility(interface, name)
+        return self.registry.getUtility(_resolve_iface(interface), name)
 
     return getter
 
 
 class BaseService(object):
-    def __init__(self, **kw):
-        try:
-            self.registry = kw.pop("registry")
-            super(BaseService, self).__init__(**kw)
-
-        except KeyError:
-            raise TypeError("Registry to the base business must be provided")
+    def __init__(self, *, registry, **kw):
+        self.registry = registry
+        super(BaseService, self).__init__(**kw)
 
 
 class RequestScopedBaseService(BaseService):
@@ -175,14 +175,10 @@ class RequestScopedBaseService(BaseService):
     :type request: pyramid.request.Request
     """
 
-    def __init__(self, **kw):
-        try:
-            self.request = kw.pop("request")
-            kw["registry"] = self.request.registry
-            super(RequestScopedBaseService, self).__init__(**kw)
-
-        except KeyError:
-            raise TypeError("Request to the base business must be provided")
+    def __init__(self, *, request, **kw):
+        self.request = request
+        kw["registry"] = request.registry
+        super(RequestScopedBaseService, self).__init__(**kw)
 
 
 def scan_services(config, *a, **kw):

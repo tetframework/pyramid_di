@@ -53,10 +53,15 @@ class ServiceOne(RequestScopedBaseService):
 
 
 @pytest.fixture()
-def pyramid_app() -> Router:
+def config():
     with Configurator() as config:
         config.include('pyramid_di')
         config.scan_services(__name__)
+
+    return config
+
+@pytest.fixture()
+def pyramid_app(config) -> Router:
     return config.make_wsgi_app()
 
 
@@ -101,3 +106,8 @@ def test_everything(pyramid_request):
     service_one = pyramid_request.find_service(ServiceOne)
     assert service_one.foo() == 'ServiceTwo.bar'
     assert service_one.named_dependency.foo() == 'named'
+
+
+def test_reregistration_raises_warning(config):
+    with pytest.warns(UserWarning, match='.*Double registration of the same service.*'):
+        config.register_di_service(InterfacedService, scope='global')
