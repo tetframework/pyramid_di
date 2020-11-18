@@ -2,19 +2,51 @@ import pytest
 from pyramid.config import Configurator
 from pyramid.request import Request
 from pyramid.router import Router
+import random
 
-from pyramid_di import RequestScopedBaseService, autowired, service
+from pyramid_di import BaseService, RequestScopedBaseService, autowired, service, reify_attr
+
+from zope.interface import Interface
 
 
-@service(scope='request')
-class ServiceTwo(RequestScopedBaseService):
+class IInterfacedService(Interface):
+    def something():
+        ...
+
+
+@service(interface=IInterfacedService, scope='global')
+class InterfacedService(BaseService):
+    def something(self):
+        return 'something'
+
+
+@service(scope='global')
+class GlobalService(BaseService):
+    def baz(self):
+        return 'global'
+
+
+@service(scope='global')
+class ServiceTwo(BaseService):
+    global_service_dependency = autowired(GlobalService)
+    interfaced_service = autowired(IInterfacedService)
+
     def bar(self):
-        return 'ServiceTwo.bar'
+        if (self.global_service_dependency.baz() == 'global' and
+            self.interfaced_service.something() == 'something'):
+            return 'ServiceTwo.bar'
+
+
+@service(scope='request', name='name_only')
+class NamedService(RequestScopedBaseService):
+    def foo(self):
+        return 'named'
 
 
 @service(scope='request')
 class ServiceOne(RequestScopedBaseService):
     dependency = autowired(ServiceTwo)
+    named_dependency = autowired(name='name_only')
 
     def foo(self):
         return self.dependency.bar()
@@ -35,6 +67,37 @@ def pyramid_request(pyramid_app) -> Request:
         yield request
 
 
+class ReifyAttrTest:
+    @reify_attr
+    def foo(self):
+        return 42
+
+    @reify_attr
+    def ham(self):
+        return random.random()
+
+    spam = ham
+
+def test_service_decorator():
+    with pytest.raises(ValueError, match='.*Invalid scope.*'):
+        @service(scope='something else')
+        class Test:
+            pass
+
+
+def test_reify_attr():
+    assert type(ReifyAttrTest.foo) is reify_attr
+    rat = ReifyAttrTest()
+    assert rat.foo == 42
+
+    ReifyAttrTest.bar = reify_attr(lambda self: 666)
+    with pytest.raises(TypeError, match='.*not bound to a named attribute.*') as excinfo:
+        rat.bar()
+
+    assert rat.ham is rat.spam
+
+
 def test_everything(pyramid_request):
     service_one = pyramid_request.find_service(ServiceOne)
     assert service_one.foo() == 'ServiceTwo.bar'
+    assert service_one.named_dependency.foo() == 'named'

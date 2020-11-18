@@ -6,7 +6,7 @@ from pyramid.config import Configurator
 from zope.interface import Interface
 from zope.interface.interface import InterfaceClass
 from functools import update_wrapper
-
+from pyramid_services import _resolve_iface
 
 _to_underscores = re.compile("((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))")
 
@@ -31,7 +31,7 @@ class reify_attr(object):
 
         if self.names is None:
             raise TypeError(
-                "reify_attr decorating {self.wrapped} not bound" "to a named attribute!"
+                f"reify_attr decorating {self.wrapped} not bound to a named attribute!"
             )
 
         val = self.wrapped(inst)
@@ -62,7 +62,7 @@ class ServiceRegistry(object):
     def _register_service(self, instance, interface):
         self.__services__.append((instance, interface))
         name = interface.__name__
-        if _is_iface_name.match(name):
+        if interface is _resolve_iface(interface) and _is_iface_name.match(name):
             name = name[1:]
 
         setattr(self, _underscore(name), instance)
@@ -91,14 +91,15 @@ def register_di_service(
             ob_instance = service_factory(registry=registry)
             get_service_registry(registry)._register_service(ob_instance, interface)
 
-            # only classes can be registered.
-            if isinstance(interface, InterfaceClass):
-                registry.registerUtility(ob_instance, interface, name=name)
+            real_interface = _resolve_iface(interface)
+            registry.registerUtility(ob_instance, real_interface, name=name)
 
             config.register_service(
                 service=ob_instance, iface=interface, context=context_iface, name=name
             )
 
+        else:
+            warn
     else:
         # noinspection PyUnusedLocal
         def wrapped_factory(context, request):
@@ -122,6 +123,7 @@ def service(interface=None, *, name="", context_iface=Interface, scope):
         # noinspection PyUnusedLocal,PyShadowingNames
         def callback(scanner, name, ob):
             config = scanner.config
+
             iface = interface
             if iface is None:
                 if service_name:
@@ -192,4 +194,4 @@ def includeme(config):
     config.include("pyramid_services")
     config.add_directive("scan_services", scan_services)
     config.add_directive("register_di_service", register_di_service)
-    config.registry.services = ServiceRegistry()
+    get_service_registry(config.registry)
