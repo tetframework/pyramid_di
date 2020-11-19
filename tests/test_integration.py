@@ -3,8 +3,9 @@ from pyramid.config import Configurator
 from pyramid.request import Request
 from pyramid.router import Router
 import random
+from pyramid.registry import Registry
 
-from pyramid_di import BaseService, RequestScopedBaseService, autowired, service, reify_attr
+from pyramid_di import BaseService, RequestScopedBaseService, autowired, service, reify_attr, ApplicationScopedBaseService
 
 from zope.interface import Interface
 
@@ -14,20 +15,20 @@ class IInterfacedService(Interface):
         ...
 
 
-@service(interface=IInterfacedService, scope='global')
-class InterfacedService(BaseService):
+@service(interface=IInterfacedService)
+class InterfacedService(ApplicationScopedBaseService):
     def something(self):
         return 'something'
 
 
-@service(scope='global')
-class GlobalService(BaseService):
+@service()
+class GlobalService(ApplicationScopedBaseService):
     def baz(self):
         return 'global'
 
 
-@service(scope='global')
-class ServiceTwo(BaseService):
+@service()
+class ServiceTwo(ApplicationScopedBaseService):
     global_service_dependency = autowired(GlobalService)
     interfaced_service = autowired(IInterfacedService)
 
@@ -88,6 +89,18 @@ def test_service_decorator():
         @service(scope='something else')
         class Test:
             pass
+
+    with pytest.warns(DeprecationWarning, match='.*global.*'):
+        @service(scope='global')
+        class Test:
+            pass
+
+    with pytest.warns(DeprecationWarning, match='.*renamed.*'):
+        class Test(BaseService):
+            pass
+
+    with pytest.warns(DeprecationWarning, match='.*renamed.*'):
+        Test(registry=Registry())
 
 
 def test_reify_attr():

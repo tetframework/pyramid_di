@@ -1,5 +1,5 @@
 import re
-from typing import Type, TypeVar
+from typing import Type, TypeVar, Any
 
 import venusian
 from pyramid.config import Configurator
@@ -8,6 +8,9 @@ from zope.interface.interface import InterfaceClass
 from functools import update_wrapper
 from pyramid_services import _resolve_iface
 import warnings
+
+
+__version__ = '0.4.dev0'
 
 
 _to_underscores = re.compile("((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))")
@@ -84,10 +87,17 @@ def register_di_service(
     scope,
     interface=Interface,
     name="",
-    context_iface=Interface
+    context_iface=Interface,
 ):
     registry = config.registry
     if scope == "global":
+        warnings.warn(
+            "The use of 'global' as scope parameter is deprecated. Use 'application' instead",
+            DeprecationWarning,
+        )
+        scope = "application"
+
+    if scope == "application":
         # register only once
         real_interface = _resolve_iface(interface)
         if registry.queryUtility(real_interface, name=name) is None:
@@ -101,8 +111,10 @@ def register_di_service(
             )
 
         else:
-            warnings.warn(f"Double registration of the same service {interface}"
-                           f" with name {name!r} attempted")
+            warnings.warn(
+                f"Double registration of the same service {interface}"
+                f" with name {name!r} attempted"
+            )
 
     else:
         # noinspection PyUnusedLocal
@@ -114,11 +126,20 @@ def register_di_service(
         )
 
 
-def service(interface=None, *, name="", context_iface=Interface, scope):
+_NOT_SET = object()
 
-    if scope not in {"global", "request"}:
+
+def service(interface=None, *, name="", context_iface=Interface, scope=_NOT_SET):
+
+    if scope not in {"global", "application", "request", _NOT_SET}:
         raise ValueError(
-            "Invalid scope {}, must be either 'global' or 'request'".format(scope)
+            f"Invalid scope {scope}, must be either 'application' or 'request'"
+        )
+
+    if scope == "global":
+        warnings.warn(
+            "The use of 'global' as scope parameter is deprecated. Use 'application' instead",
+            DeprecationWarning,
         )
 
     service_name = name
@@ -135,12 +156,23 @@ def service(interface=None, *, name="", context_iface=Interface, scope):
                 else:
                     iface = ob
 
+            actual_scope = scope
+            if actual_scope is _NOT_SET:
+                actual_scope = getattr(ob, "__pyramid_di_scope__", None)
+                if actual_scope is None:
+                    raise TypeError(f"Cannot infer service scope for {ob}")
+
+                if actual_scope not in {"application", "request"}:
+                    raise TypeError(
+                        f"{ob} has invalid scope {actual_scope}, must be either 'application' or 'request'"
+                    )
+
             config.register_di_service(
                 ob,
                 name=service_name,
                 interface=iface,
                 context_iface=context_iface,
-                scope=scope,
+                scope=actual_scope,
             )
 
         venusian.attach(wrapped, callback, category="pyramid_di.service")
@@ -164,20 +196,44 @@ def autowired(interface: Type[T] = Interface, name: str = "") -> T:
     return getter
 
 
-class BaseService(object):
-    def __init__(self, *, registry, **kw):
+class ApplicationScopedBaseService(object):
+    """
+    A convenience base class for application-scoped services.
+    """
+
+    __pyramid_di_scope__ = "application"
+
+    registry: "pyramid.registry.Registry"
+
+    def __init__(self, *, registry: "pyramid.registry.Registry", **kw):
         self.registry = registry
+        super(ApplicationScopedBaseService, self).__init__(**kw)
+
+
+class BaseService(ApplicationScopedBaseService):
+    def __init__(self, **kw):
+        warnings.warn("BaseService has been renamed to ApplicationScopedBaseService", DeprecationWarning, 2)
         super(BaseService, self).__init__(**kw)
 
+    def __init_subclass__(self):
+        warnings.warn("BaseService has been renamed to ApplicationScopedBaseService", DeprecationWarning, 2)
 
-class RequestScopedBaseService(BaseService):
+
+class RequestScopedBaseService(object):
     """
-    :type request: pyramid.request.Request
+    A convenience class for request-scoped services.
     """
 
-    def __init__(self, *, request, **kw):
+    __pyramid_di_scope__ = "request"
+
+    request: "pyramid.request.Request"
+    registry: "pyramid.registry.Registry"
+    context: Any
+
+    def __init__(self, *, request: "pyramid.request.Request", **kw):
         self.request = request
-        kw["registry"] = request.registry
+        self.context = getattr(request, 'context', None)
+        self.registry = request.registry
         super(RequestScopedBaseService, self).__init__(**kw)
 
 
