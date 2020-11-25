@@ -185,15 +185,14 @@ T = TypeVar("T", bound=object)
 
 
 def autowired(interface: Type[T] = Interface, name: str = "") -> T:
-    @reify_attr
-    def getter(self):
+    def getter(self) -> T:
         if hasattr(self, "request"):
             context = getattr(self.request, "context", None)
             return self.request.find_service(interface, context, name)
 
         return self.registry.getUtility(_resolve_iface(interface), name)
 
-    return getter
+    return reify_attr(getter)
 
 
 class ApplicationScopedBaseService(object):
