@@ -19,7 +19,7 @@ from .another import AnotherService
 # app/services/my.py
 from pyramid_di import service, RequestScopedBaseService, autowired
 
-@service(scope='request')
+@service()
 class MyService(RequestScopedBaseService):
     def my_method(self):
         return 'foobar'
@@ -30,7 +30,7 @@ class MyService(RequestScopedBaseService):
 from pyramid_di import service, RequestScopedBaseService, autowired
 from .my import MyService
 
-@service(scope='request')
+@service()
 class AnotherService(RequestScopedBaseService):
     dependency = autowired(MyService)
 
