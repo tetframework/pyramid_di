@@ -10,7 +10,7 @@ from pyramid_services import _resolve_iface
 import warnings
 
 
-__version__ = '0.4.dev0'
+__version__ = "0.4.1"
 
 
 _to_underscores = re.compile("((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))")
@@ -187,8 +187,8 @@ T = TypeVar("T", bound=object)
 def autowired(interface: Type[T] = Interface, name: str = "") -> T:
     def getter(self) -> T:
         if hasattr(self, "request"):
-            context = getattr(self.request, "context", None)
-            return self.request.find_service(interface, context, name)
+            # the context-specific services wouldn't work anyway, so do it this way
+            return self.request.find_service(interface, None, name)
 
         return self.registry.getUtility(_resolve_iface(interface), name)
 
@@ -211,11 +211,19 @@ class ApplicationScopedBaseService(object):
 
 class BaseService(ApplicationScopedBaseService):
     def __init__(self, **kw):
-        warnings.warn("BaseService has been renamed to ApplicationScopedBaseService", DeprecationWarning, 2)
+        warnings.warn(
+            "BaseService has been renamed to ApplicationScopedBaseService",
+            DeprecationWarning,
+            2,
+        )
         super(BaseService, self).__init__(**kw)
 
     def __init_subclass__(self):
-        warnings.warn("BaseService has been renamed to ApplicationScopedBaseService", DeprecationWarning, 2)
+        warnings.warn(
+            "BaseService has been renamed to ApplicationScopedBaseService",
+            DeprecationWarning,
+            2,
+        )
 
 
 class RequestScopedBaseService(object):
@@ -231,7 +239,7 @@ class RequestScopedBaseService(object):
 
     def __init__(self, *, request: "pyramid.request.Request", **kw):
         self.request = request
-        self.context = getattr(request, 'context', None)
+        self.context = getattr(request, "context", None)
         self.registry = request.registry
         super(RequestScopedBaseService, self).__init__(**kw)
 

@@ -1,0 +1,9 @@
+[run]
+branch  = True
+include = pyramid_di/*
+source  = python
+
+[report]
+exclude_lines =
+        pragma: no cover
+
