@@ -1,4 +1,4 @@
-name: Test
+name: CI
 
 on:
   push:
@@ -17,6 +17,9 @@ jobs:
           - "3.8"
           - "3.9"
           - "3.10"
+        pyramid-version:
+          - ">=1.7,<2.0"
+          - ">=2.0,<3.0"
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -26,5 +29,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: pip install -e '.[dev]'
+      - name: Install Pyramid ${{ matrix.pyramid-version }}
+        run: pip install 'pyramid${{ matrix.pyramid-version }}'
       - name: Run tests
         run: pytest
