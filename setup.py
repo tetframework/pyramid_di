@@ -6,7 +6,7 @@ here = Path(__file__).parent
 README = (here / "README.md").read_text()
 CHANGES = (here / "CHANGES.md").read_text()
 
-requires = ["pyramid>=1.7,<2.0", "pyramid_services>=1.1,<2.0"]
+requires = ["pyramid>=1.7,<3.0", "pyramid_services>=1.1,<2.0"]
 dev_requires = ["pytest", "pytest-cov"]
 
 setup(
