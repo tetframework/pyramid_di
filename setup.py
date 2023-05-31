@@ -6,7 +6,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, "README.md")).read()
 CHANGES = open(os.path.join(here, "CHANGES.md")).read()
 
-requires = ["pyramid>=1.7,<2.0", "pyramid_services>=1.1,<2.0"]
+requires = ["pyramid>=1.7,<3.0", "pyramid_services>=1.1,<2.0"]
 dev_requires = ["pytest"]
 
 setup(
