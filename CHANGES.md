@@ -4,7 +4,7 @@ Changes
 Current
 =====
 
-* 2023-05-28 Change from TravisCI to Github Actions, update testing matrix to cover Python 3.10 and Pyramid 2.0+.
+* 2023-05-28 Change from TravisCI to Github Actions, update testing matrix to cover Python 3.10, 3.11 and Pyramid 2.0+. Remove deprecated Python versions.
 
 
 0.4.1
