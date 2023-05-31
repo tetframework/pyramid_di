@@ -12,11 +12,10 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - "3.6"
-          - "3.7"
           - "3.8"
           - "3.9"
           - "3.10"
+          - "3.11"
         pyramid-version:
           - ">=1.7,<2.0"
           - ">=2.0,<3.0"
