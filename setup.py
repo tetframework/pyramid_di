@@ -7,7 +7,7 @@ README = (here / "README.md").read_text()
 CHANGES = (here / "CHANGES.md").read_text()
 
 requires = ["pyramid>=1.7,<3.0", "pyramid_services>=1.1,<2.0"]
-dev_requires = ["pytest", "pytest-cov"]
+dev_requires = ["pytest>=3.0", "pytest-cov"]
 
 setup(
     name="pyramid_di",
@@ -25,6 +25,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3 :: Only",
         "Topic :: Internet :: WWW/HTTP :: WSGI",
         "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
