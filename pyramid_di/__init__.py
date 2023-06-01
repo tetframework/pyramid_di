@@ -10,7 +10,7 @@ from pyramid_services import _resolve_iface
 import warnings
 
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 
 
 _to_underscores = re.compile("((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))")

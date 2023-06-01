@@ -11,7 +11,7 @@ dev_requires = ["pytest>=3.0", "pytest-cov"]
 
 setup(
     name="pyramid_di",
-    version="0.4.1",
+    version="0.4.2",
     description="Dependency injection stuff for Pyramid",
     long_description=README + "\n\n" + CHANGES,
     long_description_content_type="text/markdown",
