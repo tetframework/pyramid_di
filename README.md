@@ -1,4 +1,4 @@
-![pyramid_di](docs/_static/pyramid_di.png)
+![pyramid_di](https://raw.githubusercontent.com/tetframework/pyramid_di/master/docs/_static/pyramid_di.png)
 
 [![PyPI version](https://img.shields.io/pypi/v/pyramid_di.svg)](https://pypi.org/project/pyramid_di/)
 [![Python versions](https://img.shields.io/pypi/pyversions/pyramid_di.svg)](https://pypi.org/project/pyramid_di/)

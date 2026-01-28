@@ -13,6 +13,9 @@ extensions = [
     "myst_parser",
 ]
 
+# Suppress myst header warnings (logo replaces H1 title)
+suppress_warnings = ["myst.header"]
+
 templates_path = ["_templates"]
 
 # Support both RST and Markdown
