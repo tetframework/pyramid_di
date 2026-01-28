@@ -1,6 +1,12 @@
 pyramid_di
 ==========
 
+[![PyPI version](https://img.shields.io/pypi/v/pyramid_di.svg)](https://pypi.org/project/pyramid_di/)
+[![Python versions](https://img.shields.io/pypi/pyversions/pyramid_di.svg)](https://pypi.org/project/pyramid_di/)
+[![License](https://img.shields.io/pypi/l/pyramid_di.svg)](https://pypi.org/project/pyramid_di/)
+[![Documentation Status](https://readthedocs.org/projects/pyramid-di/badge/?version=latest)](https://pyramid-di.readthedocs.io/en/latest/?badge=latest)
+[![GitHub stars](https://img.shields.io/github/stars/tetframework/pyramid_di.svg?style=social)](https://github.com/tetframework/pyramid_di)
+
 Easier service location and dependency injection for Pyramid.
 
 Usage
