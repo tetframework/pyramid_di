@@ -1,6 +1,11 @@
 Changes
 =======
 
+0.4.3
+=====
+
+* 2025-01-28 Add support for pyramid_services 2.0+, Python 3.12 and 3.13. Drop support for Python 3.6-3.8.
+
 0.4.2
 =====
 

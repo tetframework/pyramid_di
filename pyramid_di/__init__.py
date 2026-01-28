@@ -5,12 +5,39 @@ import venusian
 from pyramid.config import Configurator
 from zope.interface import Interface
 from zope.interface.interface import InterfaceClass
+from zope.interface.interfaces import IInterface
 from functools import update_wrapper
-from pyramid_services import _resolve_iface
+from pyramid_services import _type_name
 import warnings
 
 
-__version__ = "0.4.2"
+def _resolve_iface(obj):
+    """
+    Resolve an object to an interface.
+
+    If the object is already an interface, return it.
+    Otherwise, create and cache a generated interface for it.
+    """
+    # if the object is an interface then we can quit early
+    if IInterface.providedBy(obj):
+        return obj
+
+    # look for a cached iface
+    iface = obj.__dict__.get('_pyramid_di_iface', None)
+    if iface is not None:
+        return iface
+
+    # make a new iface and cache it on the object
+    name = _type_name(obj)
+    iface = InterfaceClass(
+        '%s_IService' % name,
+        __doc__='pyramid_di generated interface',
+    )
+    obj._pyramid_di_iface = iface
+    return iface
+
+
+__version__ = "0.4.3"
 
 
 _to_underscores = re.compile("((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))")
