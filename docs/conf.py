@@ -55,6 +55,8 @@ html_theme_options = {
     "logo_only": True,
 }
 
+html_logo = "_static/pyramid_di.png"
+
 html_static_path = ["_static"]
 
 htmlhelp_basename = "pyramid_di_doc"
