@@ -37,7 +37,7 @@ def _resolve_iface(obj):
     return iface
 
 
-__version__ = "0.4.3"
+__version__ = "0.4.4"
 
 
 _to_underscores = re.compile("((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))")
